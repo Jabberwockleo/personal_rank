@@ -52,7 +52,7 @@ def candidate_nodes(G, node):
     return set(r).difference(set(G.adj[node]))
 
 
-def recommend(fn, export_graph=False):
+def recommend(fn, export_graph=True):
     """
         Recommendation
     """
@@ -62,12 +62,14 @@ def recommend(fn, export_graph=False):
     users, items = nx.bipartite.sets(G)
     pr = nx.pagerank(G, alpha=0.85, \
         weight=None, personalization=None, max_iter=100)
+    recom_dict = {}
     for user in users:
         recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user)], \
             key=lambda x:x[1], reverse=True)
         fd.write('{},'.format(user))
         fd.write('|'.join([':'.join([str(v) for v in recom]) for recom in recoms]))
         fd.write('\n')
+        recom_dict[user] = recoms
     fd.close()
     if export_graph is True:
         plt.figure()
@@ -75,7 +77,8 @@ def recommend(fn, export_graph=False):
         nx.draw(G, pos=layout, \
             node_size=[x * 1e4 for x in pr.values()], with_labels=True)
         plt.savefig('out_pagerank_figure.jpg')
+    return recom_dict
 
 if __name__ == "__main__":
-    recommend("../data/simple_user_item.csv", export_graph=True)
-        
+    recommend("../data/simple_user_item.csv", export_graph=False)
+
