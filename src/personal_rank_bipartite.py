@@ -148,8 +148,12 @@ def recommend_strong(fn, export_graph=True):
         itemset = set(G.nodes).difference(users)
         pr = nx.pagerank_scipy(G, alpha=0.85, \
             weight=None, personalization=None, max_iter=100)
-        recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user, itemset)], \
-            key=lambda x:x[1], reverse=True)
+        threshed_recoms = []
+        cnodes = candidate_nodes(G, user, itemset)
+        for node in cnodes:
+            if pr[node] > 1e-4:
+                threshed_recoms.append((node, round(pr[node], 3)))
+        recoms = sorted(threshed_recoms, key=lambda x:x[1], reverse=True)
         fd.write('{},'.format(user))
         recoms_out = []
         for recom in recoms:
