@@ -12,6 +12,7 @@ Author: leowan(leowan)
 Date: 2018/05/13 14:03:44
 """
 
+import time
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -74,8 +75,21 @@ def recommend(fn, export_graph=True):
     fd = open('out_pagerank_recom.csv', 'w')
     G = load_graph(fn)
     users, items = load_user_items(fn)
-    pr = nx.pagerank_scipy(G, alpha=0.85, \
-        weight=None, personalization=None, max_iter=100)
+    comp_iter = nx.connected_components(G)
+    comp_cnt = len(list(comp_iter))
+    
+    comp_iter = nx.connected_components(G)
+    pr = {}
+    iter_idx = 0
+    for node_set in comp_iter:
+        G2 = G.subgraph(node_set)
+        time_s = time.time()
+        pr.update(nx.pagerank_scipy(G2, alpha=0.85, \
+            weight=None, personalization=None, max_iter=100))
+        time_e = time.time()
+        iter_idx += 1
+        print('{}/{} subgraph: {} sec elapsed'.format(iter_idx, comp_cnt, time_e - time_s))
+    
     recom_dict = {}
     for user in users:
         recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user, items)], \
@@ -99,8 +113,11 @@ def recommend(fn, export_graph=True):
                 nc.append('r')
             else:
                 nc.append('b')
+        node_values = []
+        for node in G.nodes:
+            node_values.append(pr[node])
         nx.draw_networkx(G, pos=nx.spring_layout(G), \
-            node_size=[x * 1e4 for x in pr.values()], node_color=nc, \
+            node_size=[x * 1e3 for x in node_values], node_color=nc, \
             with_labels=True)
         plt.savefig('out_figure_pagerank.jpg')
     return recom_dict
