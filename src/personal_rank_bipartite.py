@@ -72,55 +72,65 @@ def recommend(fn, export_graph=True):
     """
         Recommendation
     """
-    fd = open('out_pagerank_recom.csv', 'w')
     G = load_graph(fn)
-    users, items = load_user_items(fn)
+    all_users, all_items = load_user_items(fn)
+    for user in all_users:
+        G.nodes[user]['type'] = 'user'
+    for item in all_items:
+        G.nodes[item]['type'] = 'item'
     comp_iter = nx.connected_components(G)
     comp_cnt = len(list(comp_iter))
-    
+    print('connected components: {}'.format(comp_cnt))
+
     comp_iter = nx.connected_components(G)
-    pr = {}
+    fd = open('out_pagerank_recom.csv', 'w')
     iter_idx = 0
     for node_set in comp_iter:
         G2 = G.subgraph(node_set)
         time_s = time.time()
-        pr.update(nx.pagerank_scipy(G2, alpha=0.85, \
-            weight=None, personalization=None, max_iter=100))
+        pr = nx.pagerank_scipy(G2, alpha=0.85, \
+            weight=None, personalization=None, max_iter=100)
         time_e = time.time()
         iter_idx += 1
         print('{}/{} subgraph: {} sec elapsed'.format(iter_idx, comp_cnt, time_e - time_s))
-    
-    recom_dict = {}
-    for user in users:
-        recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user, items)], \
-            key=lambda x:x[1], reverse=True)
-        fd.write('{},'.format(user))
-        recoms_out = []
-        for recom in recoms:
-            if recom[1] > 0:
-                recoms_out.append(recom)
-        recoms_out = recoms_out[:50]
-        fd.write('|'.join([':'.join([str(v) for v in recom]) for recom in recoms_out]))
-        fd.write('\n')
-        recom_dict[user] = recoms
-    fd.close()
-    if export_graph is True:
-        plt.figure()
-        plt.title(fn)
-        nc = []
-        for n in G.nodes:
-            if n in users:
-                nc.append('r')
+
+        users = []
+        items = []
+        for node in G2.nodes:
+            if G.nodes[node]['type'] == 'user':
+                users.append(node)
             else:
-                nc.append('b')
-        node_values = []
-        for node in G.nodes:
-            node_values.append(pr[node])
-        nx.draw_networkx(G, pos=nx.spring_layout(G), \
-            node_size=[x * 1e3 for x in node_values], node_color=nc, \
-            with_labels=True)
-        plt.savefig('out_figure_pagerank.jpg')
-    return recom_dict
+                items.append(node)
+        for user in users:
+            recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user, items)], \
+                key=lambda x:x[1], reverse=True)
+            fd.write('{},'.format(user))
+            recoms_out = []
+            for recom in recoms:
+                if recom[1] > 0:
+                    recoms_out.append(recom)
+            recoms_out = recoms_out[:50]
+            fd.write('|'.join([':'.join([str(v) for v in recom]) for recom in recoms_out]))
+            fd.write('\n')
+        print('completed make recomm for subgraph {}/{}'.format(iter_idx, comp_cnt))
+        if export_graph is True:
+            plt.figure()
+            plt.title(fn)
+            nc = []
+            for n in G2.nodes:
+                if n in users:
+                    nc.append('r')
+                else:
+                    nc.append('b')
+            node_values = []
+            for node in G2.nodes:
+                node_values.append(pr[node])
+            nx.draw_networkx(G2, pos=nx.spring_layout(G), \
+                node_size=[x * 1e3 for x in node_values], node_color=nc, \
+                with_labels=True)
+            plt.savefig('out_figure_subgraph_{}.jpg'.format(iter_idx))
+    fd.close()
+    return
 
 
 def recommend_strong(fn, export_graph=True):
@@ -168,5 +178,5 @@ def recommend_strong(fn, export_graph=True):
 
 
 if __name__ == "__main__":
-    recommend("../data/simple_user_item.csv", export_graph=False)
+    recommend("../data/simple_user_item.csv", export_graph=True)
 
