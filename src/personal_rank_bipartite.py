@@ -78,7 +78,7 @@ def recommend(fn, export_graph=True):
     for user in users:
         nodes = nx.node_connected_component(G_raw, user)
         G = G_raw.subgraph(nodes)
-        pr = nx.pagerank(G, alpha=0.85, \
+        pr = nx.pagerank_scipy(G, alpha=0.85, \
             weight=None, personalization=None, max_iter=100)
         recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user)], \
             key=lambda x:x[1], reverse=True)
@@ -90,7 +90,7 @@ def recommend(fn, export_graph=True):
     if export_graph is True:
         plt.figure()
         plt.title(fn)
-        pr = nx.pagerank(G, alpha=0.85, \
+        pr = nx.pagerank_scipy(G, alpha=0.85, \
             weight=None, personalization=None, max_iter=100)
         nc = []
         for n in G.nodes:
