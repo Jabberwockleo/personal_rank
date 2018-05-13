@@ -102,9 +102,14 @@ def recommend(fn, export_graph=True):
                 users.append(node)
             else:
                 items.append(node)
+        print('{} users, {} items'.format(len(users), len(items)))
         for user in users:
-            recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G2, user, items)], \
-                key=lambda x:x[1], reverse=True)
+            threshed_recoms = []
+            cnodes = candidate_nodes(G, user, items)
+            for node in cnodes:
+                if pr[node] > 1e-4:
+                    threshed_recoms.append((node, pr[node]))
+            recoms = sorted(threshed_recoms, key=lambda x:x[1], reverse=True)
             fd.write('{},'.format(user))
             recoms_out = []
             for recom in recoms:
