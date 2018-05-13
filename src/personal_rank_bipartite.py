@@ -98,12 +98,12 @@ def recommend(fn, export_graph=True):
         users = []
         items = []
         for node in G2.nodes:
-            if G.nodes[node]['type'] == 'user':
+            if G2.nodes[node]['type'] == 'user':
                 users.append(node)
             else:
                 items.append(node)
         for user in users:
-            recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G, user, items)], \
+            recoms = sorted([(n, round(pr[n], 3)) for n in candidate_nodes(G2, user, items)], \
                 key=lambda x:x[1], reverse=True)
             fd.write('{},'.format(user))
             recoms_out = []
@@ -126,7 +126,7 @@ def recommend(fn, export_graph=True):
             node_values = []
             for node in G2.nodes:
                 node_values.append(pr[node])
-            nx.draw_networkx(G2, pos=nx.spring_layout(G), \
+            nx.draw_networkx(G2, pos=nx.spring_layout(G2), \
                 node_size=[x * 1e3 for x in node_values], node_color=nc, \
                 with_labels=True)
             plt.savefig('out_figure_subgraph_{}.jpg'.format(iter_idx))
