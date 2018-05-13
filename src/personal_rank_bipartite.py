@@ -92,7 +92,8 @@ def recommend(fn, export_graph=True):
             weight=None, personalization=None, max_iter=100)
         time_e = time.time()
         iter_idx += 1
-        print('{}/{} subgraph: {} sec elapsed'.format(iter_idx, comp_cnt, time_e - time_s))
+        print('{}/{} subgraph ({} nodes): {} sec elapsed'.format( \
+            iter_idx, comp_cnt, len(G2.nodes), time_e - time_s))
 
         users = []
         items = []
