@@ -19,6 +19,9 @@ import matplotlib.pyplot as plt
 
 def random_walk(G, alpha=0.85, personalization=None,
              iter_num=100, weight='weight'):
+    """
+        Random walk
+    """
     if len(G) == 0:
         return {}
 
@@ -55,6 +58,9 @@ def random_walk(G, alpha=0.85, personalization=None,
 
 def random_walk_scipy(G, alpha=0.85, personalization=None,
                    iter_num=5, weight='weight'):
+    """
+        Random walk using scipy
+    """
     import scipy.sparse
 
     N = len(G)
