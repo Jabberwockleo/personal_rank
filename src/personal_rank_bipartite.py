@@ -201,9 +201,10 @@ def recommend_stable(fn, export_graph=True):
     iter_idx = 0
     for node_set in comp_iter:
         G2 = G.subgraph(node_set)
+        adjust_edges_weights(G2)
         time_s = time.time()
         pr = nx.pagerank_scipy(G2, alpha=0.85, tol=1e-06, \
-            personalization=None, weight=None, max_iter=100)
+            personalization=None, weight='weight', max_iter=100)
         time_e = time.time()
         iter_idx += 1
         print('{}/{} subgraph ({} nodes): {} sec elapsed'.format( \
@@ -349,5 +350,5 @@ def recommend_random_walk(fn, export_graph=True):
     return
 
 if __name__ == "__main__":
-    recommend_random_walk("../data/simple_user_item.csv", export_graph=True)
+    recommend_stable("../data/simple_user_item.csv", export_graph=True)
 
